@@ -27,12 +27,49 @@ public class Main {
     private static void runGame(Registry registry) throws RemoteException, NotBoundException, InterruptedException {
         GameConnector gameConnector = (GameConnector) registry.lookup("TicTacToe");
         Player player = new Player(prop.getProperty("user.name"));
-        System.out.println(gameConnector.addPlayer(player));
-        while(true){
-            Scanner scanner = new Scanner(System.in);
-            int x = scanner.nextInt();
-            int y = scanner.nextInt();
-            System.out.println(gameConnector.move(x,y,player));
+        boolean isPlayerAdded = gameConnector.addPlayer(player);
+        System.out.println(gameConnector.getMessage());
+        if(isPlayerAdded){
+            int round = 1;
+            boolean isGameStarted = gameConnector.isGameStared();
+            boolean isUserFirst = !gameConnector.isGameStared();
+            while(!isGameStarted){
+                Thread.sleep(1000);
+                isGameStarted = gameConnector.isGameStared();
+            }
+
+            if(isUserFirst){
+                System.out.println(gameConnector.getMessage());
+            }
+
+            int signsNumberServer = 0;
+
+            while (gameConnector.isGameStared()){
+
+                while (isUserFirst && signsNumberServer % 2 == 1) {
+                    Thread.sleep(1000);
+                    System.out.println("Please wait..");
+                    signsNumberServer = gameConnector.howManySignsOnBoard();
+                }
+                while(!isUserFirst && signsNumberServer%2 == 0) {
+                    Thread.sleep(1000);
+                    System.out.println("Please wait..");
+                    signsNumberServer = gameConnector.howManySignsOnBoard();
+                }
+
+                if(round != 1)
+                    System.out.println(gameConnector.getMessage());
+
+                Scanner scanner = new Scanner(System.in);
+                int x = scanner.nextInt();
+                int y = scanner.nextInt();
+                boolean isMoved = gameConnector.move(x,y,player);
+                if(isMoved)
+                    round++;
+                System.out.println("After\n" + gameConnector.getMessage());
+                signsNumberServer = gameConnector.howManySignsOnBoard();
+                //scanner.close();
+            }
         }
     }
 }
